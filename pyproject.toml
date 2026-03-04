@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "odoo-rest-api"
 version = "0.1.0"
@@ -5,6 +9,18 @@ description = "Decorator-based REST API framework for Odoo modules"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "LGPL-3.0-or-later"
+authors = [{ name = "Mohammed Farhan KC", email = "kcfarhan123@gmail.com" }]
+keywords = ["odoo", "rest", "api", "framework", "decorator"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = []
 
 [tool.setuptools.packages.find]

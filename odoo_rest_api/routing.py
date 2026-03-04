@@ -30,10 +30,10 @@ def make_handler(route_def, auth_handler=None):
 
             # Authentication
             if auth_mode in ("none", "public", "user"):
-                if auth_mode == "public":
-                    env = request.env(user=SUPERUSER_ID)
-                else:
+                if auth_mode == "user":
                     env = request.env
+                else:
+                    env = request.env(user=SUPERUSER_ID)
             else:
                 # Pluggable auth: use direct handler or registry lookup
                 user_id = validate_request(request, auth_mode, auth_handler)
@@ -99,6 +99,27 @@ def generate_controller(api_instance, caller_module):
         )(handler)
 
         methods[method_name] = decorated
+
+    # Catch-all route: returns JSON 404 for any unmatched path under the prefix
+    if api_instance.prefix:
+        catchall_path = api_instance.prefix + "/<path:unmatched>"
+
+        def catchall_handler(self, **kwargs):
+            return error_response(
+                message=f"Endpoint not found: {http.request.httprequest.path}",
+                status=404,
+                error_type="NotFound",
+            )
+
+        catchall_handler.__name__ = "_rest_catchall"
+        decorated_catchall = http.route(
+            catchall_path,
+            type="http",
+            auth="none",
+            methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+            csrf=False,
+        )(catchall_handler)
+        methods["_rest_catchall"] = decorated_catchall
 
     controller_name = f"RestController_{id(api_instance)}"
     controller_cls = type(controller_name, (http.Controller,), methods)

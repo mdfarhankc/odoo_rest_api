@@ -10,7 +10,7 @@ class RouteDefinition:
     method: str
     path: str
     handler: Callable
-    auth: str = "api_key"
+    auth: str = "none"
     cors: Optional[str] = "*"
 
 
@@ -45,7 +45,7 @@ class OdooAPI:
     def __init__(
         self,
         prefix: str = "",
-        auth: str = "api_key",
+        auth: str = "none",
         auth_handler: Optional[Callable] = None,
         cors: str = "*",
     ):
