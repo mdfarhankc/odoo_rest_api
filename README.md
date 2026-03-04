@@ -1,5 +1,9 @@
 # odoo-rest-api
 
+![PyPI](https://img.shields.io/pypi/v/odoo-rest-api)
+![Python](https://img.shields.io/pypi/pyversions/odoo-rest-api)
+![License](https://img.shields.io/pypi/l/odoo-rest-api)
+
 A decorator-based REST API framework for Odoo. Create clean, standardized REST endpoints inside your Odoo modules with a FastAPI-like developer experience.
 
 ## Features

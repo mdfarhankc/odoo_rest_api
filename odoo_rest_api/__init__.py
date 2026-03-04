@@ -1,3 +1,5 @@
+__version__ = "0.2.1"
+
 from .api import OdooRestAPI
 from .auth import register_auth_handler
 from .docs import generate_openapi_spec
