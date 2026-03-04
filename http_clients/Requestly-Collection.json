@@ -1,0 +1,520 @@
+{
+  "schema_version": "1.0.0",
+  "records": [
+    {
+      "id": "781587fa-d9c6-41e8-8330-b0f8bea0f7c4",
+      "collectionId": "",
+      "name": "Odoo REST API - Demo",
+      "description": "",
+      "deleted": false,
+      "type": "collection",
+      "data": {
+        "variables": {
+          "apiUrl": {
+            "id": "05b7ffa3-ee6d-43f3-b23d-c25c78772e33",
+            "type": "string",
+            "syncValue": "http://localhost:8098/api/v1",
+            "localValue": "",
+            "isPersisted": true,
+            "key": "apiUrl"
+          }
+        },
+        "auth": {
+          "authConfigStore": {},
+          "currentAuthType": "INHERIT"
+        }
+      }
+    },
+    {
+      "id": "8d32cae6-ee11-42eb-91da-36fb4cbbe901",
+      "collectionId": "781587fa-d9c6-41e8-8330-b0f8bea0f7c4",
+      "name": "Analytic",
+      "description": "",
+      "deleted": false,
+      "type": "collection",
+      "data": {
+        "variables": {},
+        "auth": {
+          "authConfigStore": {},
+          "currentAuthType": "INHERIT"
+        }
+      }
+    },
+    {
+      "id": "0dfcd0a6-2ef4-4a6c-aec8-4b7402c681cb",
+      "collectionId": "8d32cae6-ee11-42eb-91da-36fb4cbbe901",
+      "name": "Get Analytics Data",
+      "deleted": false,
+      "rank": "auntit17726374944701",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/analytics/dashboard",
+          "queryParams": [],
+          "method": "GET",
+          "headers": [],
+          "body": "",
+          "contentType": "text/plain"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": {
+          "body": "{\"success\": true, \"data\": {\"customers\": 44, \"suppliers\": 152, \"orders\": {\"confirmed\": 9926, \"draft\": 78}, \"invoices\": {\"paid\": 8281, \"pending\": 1650}}, \"error\": null}",
+          "time": 1213.9806999973953,
+          "headers": [
+            {
+              "key": "server",
+              "value": "Werkzeug/3.0.1 Python/3.12.8"
+            },
+            {
+              "key": "date",
+              "value": "Wed, 04 Mar 2026 15:19:15 GMT"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "content-length",
+              "value": "166"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "connection",
+              "value": "close"
+            }
+          ],
+          "status": 200,
+          "statusText": "OK",
+          "redirectedUrl": ""
+        },
+        "testResults": []
+      }
+    },
+    {
+      "id": "a4929157-ccc1-418b-84f2-dd82ebebc900",
+      "collectionId": "8d32cae6-ee11-42eb-91da-36fb4cbbe901",
+      "name": "Top products",
+      "deleted": false,
+      "rank": "av",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/analytics/top-products",
+          "queryParams": [],
+          "method": "GET",
+          "headers": [],
+          "body": "",
+          "contentType": "text/plain"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": null,
+        "testResults": []
+      }
+    },
+    {
+      "id": "fd835bb5-3d12-4eae-bf7e-cd4da03a6c43",
+      "collectionId": "781587fa-d9c6-41e8-8330-b0f8bea0f7c4",
+      "name": "Partner",
+      "description": "",
+      "deleted": false,
+      "type": "collection",
+      "data": {
+        "variables": {},
+        "auth": {
+          "authConfigStore": {},
+          "currentAuthType": "INHERIT"
+        }
+      }
+    },
+    {
+      "id": "dd185016-9ea7-4be7-b4be-c36468474fc2",
+      "collectionId": "fd835bb5-3d12-4eae-bf7e-cd4da03a6c43",
+      "name": "Get all partner",
+      "deleted": false,
+      "rank": "auntit17726339522041",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/partners",
+          "queryParams": [],
+          "method": "GET",
+          "headers": [],
+          "body": "",
+          "contentType": "text/plain"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": {
+          "body": "{\"success\": false, \"data\": null, \"error\": {\"type\": \"NotFound\", \"message\": \"Endpoint not found: /api/v1/partner\"}}",
+          "time": 66.58399999886751,
+          "headers": [
+            {
+              "key": "server",
+              "value": "Werkzeug/3.0.1 Python/3.12.8"
+            },
+            {
+              "key": "date",
+              "value": "Wed, 04 Mar 2026 14:20:29 GMT"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "content-length",
+              "value": "113"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "connection",
+              "value": "close"
+            }
+          ],
+          "status": 404,
+          "statusText": "NOT FOUND",
+          "redirectedUrl": ""
+        },
+        "testResults": []
+      }
+    },
+    {
+      "id": "2f948d2d-5ff5-4846-9695-1ed8c9df2caf",
+      "collectionId": "fd835bb5-3d12-4eae-bf7e-cd4da03a6c43",
+      "name": "Get all partner by id",
+      "deleted": false,
+      "rank": "av",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/partners/66",
+          "queryParams": [],
+          "method": "GET",
+          "headers": [],
+          "body": "",
+          "contentType": "text/plain"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": null,
+        "testResults": []
+      }
+    },
+    {
+      "id": "6921524f-1a18-4d5d-b494-e8599e13b8cf",
+      "collectionId": "fd835bb5-3d12-4eae-bf7e-cd4da03a6c43",
+      "name": "Create partner",
+      "deleted": false,
+      "rank": "aw",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/partners",
+          "queryParams": [],
+          "method": "POST",
+          "headers": [],
+          "body": "{\n  \"name\": \"Farhan Test\"\n}",
+          "contentType": "application/json"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": null,
+        "testResults": []
+      }
+    },
+    {
+      "id": "8cd2798f-f353-4f30-8e16-84e252557d86",
+      "collectionId": "fd835bb5-3d12-4eae-bf7e-cd4da03a6c43",
+      "name": "Update Partner",
+      "deleted": false,
+      "rank": "ax",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/partners/209",
+          "queryParams": [],
+          "method": "PATCH",
+          "headers": [],
+          "body": "{\n  \"name\": \"Farhan K C Test\",\n  \"email\": \"kcfarhan123@gmail.com\"\n}",
+          "contentType": "application/json"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": {
+          "body": "{\"success\": true, \"data\": {\"id\": 209, \"name\": \"Farhan K C Test\", \"email\": false, \"phone\": false, \"street\": false, \"city\": false, \"country_id\": false, \"is_company\": false}, \"error\": null}",
+          "time": 150.53999999910593,
+          "headers": [
+            {
+              "key": "server",
+              "value": "Werkzeug/3.0.1 Python/3.12.8"
+            },
+            {
+              "key": "date",
+              "value": "Wed, 04 Mar 2026 14:28:41 GMT"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "content-length",
+              "value": "186"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "PATCH"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "key": "connection",
+              "value": "close"
+            }
+          ],
+          "status": 200,
+          "statusText": "OK",
+          "redirectedUrl": ""
+        },
+        "testResults": []
+      }
+    },
+    {
+      "id": "0fd0d199-8c9f-4f40-9ae7-f5b54c96f3b0",
+      "collectionId": "fd835bb5-3d12-4eae-bf7e-cd4da03a6c43",
+      "name": "Delete Partner",
+      "deleted": false,
+      "rank": "ay",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/partners/209",
+          "queryParams": [],
+          "method": "DELETE",
+          "headers": [],
+          "body": "{\n  \"name\": \"Farhan K C Test\",\n  \"email\": \"kcfarhan123@gmail.com\"\n}",
+          "contentType": "application/json"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": null,
+        "testResults": []
+      }
+    },
+    {
+      "id": "e3dd74ef-fac3-4e03-8818-455d4cc00934",
+      "collectionId": "781587fa-d9c6-41e8-8330-b0f8bea0f7c4",
+      "name": "Purchase",
+      "description": "",
+      "deleted": false,
+      "type": "collection",
+      "data": {
+        "variables": {},
+        "auth": {
+          "authConfigStore": {},
+          "currentAuthType": "INHERIT"
+        }
+      }
+    },
+    {
+      "id": "e5bc63cf-291a-420e-a974-d38cfb8e6bf7",
+      "collectionId": "e3dd74ef-fac3-4e03-8818-455d4cc00934",
+      "name": "Get all purchases",
+      "deleted": false,
+      "rank": "auntit17726349660711",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/purchases",
+          "queryParams": [],
+          "method": "GET",
+          "headers": [],
+          "body": "",
+          "contentType": "text/plain"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": null,
+        "testResults": []
+      }
+    },
+    {
+      "id": "151993b6-b6da-4d39-9576-d31acb2a2f24",
+      "collectionId": "e3dd74ef-fac3-4e03-8818-455d4cc00934",
+      "name": "Get purchase details",
+      "deleted": false,
+      "rank": "av",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/purchases/4075",
+          "queryParams": [],
+          "method": "GET",
+          "headers": [],
+          "body": "",
+          "contentType": "text/plain"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": null,
+        "testResults": []
+      }
+    },
+    {
+      "id": "83686a6b-c229-42d2-af0b-9bbc5c049a21",
+      "collectionId": "781587fa-d9c6-41e8-8330-b0f8bea0f7c4",
+      "name": "Sale",
+      "description": "",
+      "deleted": false,
+      "type": "collection",
+      "data": {
+        "variables": {},
+        "auth": {
+          "authConfigStore": {},
+          "currentAuthType": "INHERIT"
+        }
+      }
+    },
+    {
+      "id": "8aa109ea-f501-4577-9a75-84b27e326252",
+      "collectionId": "83686a6b-c229-42d2-af0b-9bbc5c049a21",
+      "name": "Get all sales",
+      "deleted": false,
+      "rank": "auntit17726348634561",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/sales",
+          "queryParams": [],
+          "method": "GET",
+          "headers": [],
+          "body": "",
+          "contentType": "text/plain"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": null,
+        "testResults": []
+      }
+    },
+    {
+      "id": "95898117-3419-47ee-8b52-45ffcd12cb7f",
+      "collectionId": "83686a6b-c229-42d2-af0b-9bbc5c049a21",
+      "name": "Get sale details",
+      "deleted": false,
+      "rank": "av",
+      "type": "api",
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{apiUrl}}/sales/10199",
+          "queryParams": [],
+          "method": "GET",
+          "headers": [],
+          "body": "",
+          "contentType": "text/plain"
+        },
+        "scripts": {
+          "preRequest": "",
+          "postResponse": ""
+        },
+        "auth": {
+          "currentAuthType": "INHERIT",
+          "authConfigStore": {}
+        },
+        "response": null,
+        "testResults": []
+      }
+    }
+  ]
+}

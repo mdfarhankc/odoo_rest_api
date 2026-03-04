@@ -1,0 +1,299 @@
+{
+  "info": {
+    "_postman_id": "fb0a2484-093d-4c36-b37a-650bde8de332",
+    "name": "Odoo REST API - Demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "id": "cd394f4b-04be-4357-ab28-f458b70ae66c",
+      "name": "Analytic",
+      "item": [
+        {
+          "id": "22f81d2f-de29-4b66-9213-7b7461d6a1e0",
+          "name": "Get Analytics Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/analytics/dashboard",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "analytics",
+                "dashboard"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "54f48930-ce17-4de0-8166-85dfc5b81bb3",
+          "name": "Top products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/analytics/top-products",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "analytics",
+                "top-products"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        }
+      ],
+      "variable": []
+    },
+    {
+      "id": "e33af096-037d-4ab8-a05c-f335c359cef6",
+      "name": "Partner",
+      "item": [
+        {
+          "id": "398d83a2-a272-4a5a-a242-4a351b06cae5",
+          "name": "Get all partner",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/partners",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "partners"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "6700bf22-440a-441d-b3e6-8af046b22dae",
+          "name": "Get all partner by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/partners/66",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "partners",
+                "66"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "c0e96a4d-047d-4631-93ed-e56f6284d58c",
+          "name": "Create partner",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Farhan Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apiUrl}}/partners",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "partners"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "24b761c1-622d-4b27-804e-d92e8ffbea76",
+          "name": "Update Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Farhan K C Test\",\n  \"email\": \"kcfarhan123@gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apiUrl}}/partners/209",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "partners",
+                "209"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "4b52b501-1d2b-491c-9fe3-3051e1310c6a",
+          "name": "Delete Partner",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Farhan K C Test\",\n  \"email\": \"kcfarhan123@gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apiUrl}}/partners/209",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "partners",
+                "209"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        }
+      ],
+      "variable": []
+    },
+    {
+      "id": "c3df1fdd-5d4a-414e-bcc4-f48bf5fadc6f",
+      "name": "Purchase",
+      "item": [
+        {
+          "id": "a0752b57-d2a7-43db-955d-40e33939e8aa",
+          "name": "Get all purchases",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/purchases",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "purchases"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "8c50ac0b-49a4-4c69-9337-6c5aef8e3937",
+          "name": "Get purchase details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/purchases/4075",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "purchases",
+                "4075"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        }
+      ],
+      "variable": []
+    },
+    {
+      "id": "52a63d3d-b893-4415-8173-2669d25c8568",
+      "name": "Sale",
+      "item": [
+        {
+          "id": "b8f2e92e-aff4-4df1-915c-15c8b25a150e",
+          "name": "Get all sales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/sales",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "sales"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        },
+        {
+          "id": "723dfbf9-a1d1-43cc-907e-1a087642a84b",
+          "name": "Get sale details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiUrl}}/sales/10199",
+              "host": [
+                "{{apiUrl}}"
+              ],
+              "path": [
+                "sales",
+                "10199"
+              ],
+              "protocol": "https"
+            }
+          },
+          "response": [],
+          "event": []
+        }
+      ],
+      "variable": []
+    }
+  ],
+  "variable": [
+    {
+      "id": "23db5088-cb88-4c9c-80cc-f4616c6132d5",
+      "key": "apiUrl",
+      "value": "http://localhost:8098/api/v1",
+      "type": "default"
+    }
+  ]
+}
