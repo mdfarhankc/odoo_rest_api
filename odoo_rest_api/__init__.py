@@ -1,5 +1,6 @@
-from .api import OdooAPI
+from .api import OdooRestAPI
 from .auth import register_auth_handler
+from .docs import generate_openapi_spec
 from .exceptions import (
     APIException,
     BadRequest,

@@ -27,9 +27,9 @@ No Odoo module dependency needed — just a pip package.
 
 ```python
 # my_addon/controllers/partner_api.py
-from odoo_rest_api import OdooAPI, NotFound, BadRequest
+from odoo_rest_api import OdooRestAPI, NotFound, BadRequest
 
-api = OdooAPI(prefix='/api/v1')
+api = OdooRestAPI(prefix='/api/v1')
 
 @api.get('/partners')
 def list_partners(env, **params):
@@ -83,8 +83,8 @@ Share one API instance across multiple files:
 
 ```python
 # controllers/app.py — shared instance
-from odoo_rest_api import OdooAPI
-api = OdooAPI(prefix='/api/v1')
+from odoo_rest_api import OdooRestAPI
+api = OdooRestAPI(prefix='/api/v1')
 
 # controllers/partner.py
 from .app import api
@@ -157,7 +157,7 @@ By default, routes have no authentication (`auth="none"`). You add auth by provi
 
 ```python
 from odoo import SUPERUSER_ID, api as odoo_api
-from odoo_rest_api import OdooAPI, Unauthorized
+from odoo_rest_api import OdooRestAPI, Unauthorized
 
 def my_auth(request):
     api_key = request.httprequest.headers.get('X-API-Key')
@@ -172,7 +172,7 @@ def my_auth(request):
 
     return SUPERUSER_ID  # or a specific user_id
 
-api = OdooAPI(prefix='/api/v1', auth_handler=my_auth)
+api = OdooRestAPI(prefix='/api/v1', auth_handler=my_auth)
 ```
 
 ### Option 2: Named handler (reusable across multiple APIs)
@@ -182,14 +182,14 @@ from odoo_rest_api import register_auth_handler
 
 register_auth_handler('my_key', my_auth)
 
-api = OdooAPI(prefix='/api/v1', auth='my_key')
+api = OdooRestAPI(prefix='/api/v1', auth='my_key')
 ```
 
 ### Option 3: Odoo's built-in API keys
 
 ```python
 from odoo import SUPERUSER_ID, api as odoo_api
-from odoo_rest_api import OdooAPI, Unauthorized
+from odoo_rest_api import OdooRestAPI, Unauthorized
 
 def odoo_apikey_auth(request):
     api_key = request.httprequest.headers.get('X-API-Key')
@@ -202,7 +202,7 @@ def odoo_apikey_auth(request):
         raise Unauthorized('Invalid API key')
     return uid
 
-api = OdooAPI(prefix='/api/v1', auth_handler=odoo_apikey_auth)
+api = OdooRestAPI(prefix='/api/v1', auth_handler=odoo_apikey_auth)
 ```
 
 See [`examples/`](examples/) for a complete working addon with auth and multi-file routing.

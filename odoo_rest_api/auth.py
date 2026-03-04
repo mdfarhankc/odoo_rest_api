@@ -20,7 +20,7 @@ def register_auth_handler(name, handler):
 
     Args:
         name: Handler name used as the ``auth`` parameter
-              in ``OdooAPI(auth=...)`` or ``@api.get(..., auth=...)``.
+              in ``OdooRestAPI(auth=...)`` or ``@api.get(..., auth=...)``.
         handler: Callable that takes an Odoo ``request`` object and returns
                  the authenticated ``user_id`` (int). Should raise
                  ``Unauthorized`` on failure.
@@ -52,7 +52,7 @@ def validate_request(request, auth_mode, auth_handler=None):
     Validate an incoming request.
 
     Resolution order:
-    1. Direct ``auth_handler`` callable (passed via ``OdooAPI(auth_handler=...)``)
+    1. Direct ``auth_handler`` callable (passed via ``OdooRestAPI(auth_handler=...)``)
     2. Registered handler matching ``auth_mode``
 
     Returns:

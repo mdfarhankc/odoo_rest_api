@@ -12,17 +12,18 @@ class RouteDefinition:
     handler: Callable
     auth: str = "none"
     cors: Optional[str] = "*"
+    tags: Optional[list] = None
 
 
-class OdooAPI:
+class OdooRestAPI:
     """
     FastAPI-like interface for defining REST endpoints within Odoo.
 
     Usage::
 
-        from odoo_rest_api import OdooAPI
+        from odoo_rest_api import OdooRestAPI
 
-        api = OdooAPI(prefix='/api/v1')
+        api = OdooRestAPI(prefix='/api/v1')
 
         @api.get('/partners')
         def list_partners(env, **params):
@@ -37,7 +38,7 @@ class OdooAPI:
             # ... validate token, return user_id
             return user_id
 
-        api = OdooAPI(prefix='/api/v1', auth_handler=my_auth)
+        api = OdooRestAPI(prefix='/api/v1', auth_handler=my_auth)
     """
 
     _instances: list = []
@@ -48,14 +49,22 @@ class OdooAPI:
         auth: str = "none",
         auth_handler: Optional[Callable] = None,
         cors: str = "*",
+        docs: bool = True,
+        title: str = "Odoo REST API",
+        version: str = "1.0.0",
+        description: str = "",
     ):
         self.prefix = prefix.rstrip("/")
         self.auth = auth
         self.auth_handler = auth_handler
         self.cors = cors
+        self.docs = docs
+        self.title = title
+        self.version = version
+        self.description = description
         self.routes: list[RouteDefinition] = []
         self._controller = None
-        OdooAPI._instances.append(self)
+        OdooRestAPI._instances.append(self)
 
     # ── HTTP method decorators ──────────────────────────────────────
 
@@ -86,6 +95,7 @@ class OdooAPI:
                 handler=func,
                 auth=kwargs.get("auth", self.auth),
                 cors=kwargs.get("cors", self.cors),
+                tags=kwargs.get("tags"),
             )
             self.routes.append(route_def)
             return func
@@ -104,7 +114,7 @@ class OdooAPI:
         Example::
 
             # my_addon/controllers/partner.py
-            api = OdooAPI(prefix='/api/v1')
+            api = OdooRestAPI(prefix='/api/v1')
 
             @api.get('/partners')
             def list_partners(env): ...

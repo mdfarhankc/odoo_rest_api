@@ -74,7 +74,7 @@ def make_handler(route_def, auth_handler=None):
 def generate_controller(api_instance, caller_module):
     """
     Dynamically create an http.Controller subclass with @http.route()
-    methods for every route registered on the OdooAPI instance.
+    methods for every route registered on the OdooRestAPI instance.
 
     The controller's __module__ is set to caller_module so Odoo registers
     it under the correct addon.
@@ -99,6 +99,39 @@ def generate_controller(api_instance, caller_module):
         )(handler)
 
         methods[method_name] = decorated
+
+    # Docs routes: /docs (Swagger UI) and /openapi.json (spec)
+    if api_instance.docs and api_instance.prefix:
+        from .docs import generate_openapi_spec, get_swagger_ui_html
+        import json as _json
+
+        openapi_spec = generate_openapi_spec(api_instance)
+        spec_json = _json.dumps(openapi_spec, indent=2)
+        docs_title = api_instance.title
+
+        docs_path = api_instance.prefix + "/docs"
+        openapi_path = api_instance.prefix + "/openapi.json"
+
+        def docs_handler(self, **kwargs):
+            from werkzeug.wrappers import Response
+            html = get_swagger_ui_html(openapi_path, docs_title)
+            return Response(html, status=200, content_type="text/html")
+
+        docs_handler.__name__ = "_rest_docs"
+        methods["_rest_docs"] = http.route(
+            docs_path, type="http", auth="none", methods=["GET"],
+            csrf=False, cors="*",
+        )(docs_handler)
+
+        def openapi_handler(self, **kwargs):
+            from werkzeug.wrappers import Response
+            return Response(spec_json, status=200, content_type="application/json")
+
+        openapi_handler.__name__ = "_rest_openapi"
+        methods["_rest_openapi"] = http.route(
+            openapi_path, type="http", auth="none", methods=["GET"],
+            csrf=False, cors="*",
+        )(openapi_handler)
 
     # Catch-all route: returns JSON 404 for any unmatched path under the prefix
     if api_instance.prefix:

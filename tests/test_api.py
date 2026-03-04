@@ -1,11 +1,11 @@
 """
-Tests for OdooAPI route collection.
+Tests for OdooRestAPI route collection.
 
 Note: register() requires Odoo's http.Controller and is not tested here.
 Only the decorator-based route collection is tested.
 """
 
-from odoo_rest_api.api import OdooAPI, RouteDefinition
+from odoo_rest_api.api import OdooRestAPI, RouteDefinition
 
 
 class TestRouteDefinition:
@@ -18,11 +18,11 @@ class TestRouteDefinition:
         assert rd.cors == "*"
 
 
-class TestOdooAPIRouteCollection:
+class TestOdooRestAPIRouteCollection:
     def setup_method(self):
         # Clear class-level instances to avoid pollution between tests
-        OdooAPI._instances = []
-        self.api = OdooAPI(prefix="/api/v1")
+        OdooRestAPI._instances = []
+        self.api = OdooRestAPI(prefix="/api/v1")
 
     def test_get_decorator(self):
         @self.api.get("/partners")
@@ -90,11 +90,11 @@ class TestOdooAPIRouteCollection:
         assert list_partners(None) == "original"
 
     def test_prefix_stripping(self):
-        api = OdooAPI(prefix="/api/v1/")
+        api = OdooRestAPI(prefix="/api/v1/")
         assert api.prefix == "/api/v1"
 
     def test_empty_prefix(self):
-        api = OdooAPI()
+        api = OdooRestAPI()
 
         @api.get("/health")
         def health(env):
@@ -115,7 +115,7 @@ class TestOdooAPIRouteCollection:
         assert self.api.routes[1].auth == "api_key"
 
     def test_default_auth(self):
-        api = OdooAPI(prefix="/api", auth="jwt")
+        api = OdooRestAPI(prefix="/api", auth="jwt")
 
         @api.get("/test")
         def test_route(env):
@@ -131,9 +131,9 @@ class TestOdooAPIRouteCollection:
         assert self.api.routes[0].cors == "https://example.com"
 
     def test_instances_tracked(self):
-        OdooAPI._instances = []
-        api1 = OdooAPI(prefix="/api/v1")
-        api2 = OdooAPI(prefix="/api/v2")
-        assert len(OdooAPI._instances) == 2
-        assert OdooAPI._instances[0] is api1
-        assert OdooAPI._instances[1] is api2
+        OdooRestAPI._instances = []
+        api1 = OdooRestAPI(prefix="/api/v1")
+        api2 = OdooRestAPI(prefix="/api/v2")
+        assert len(OdooRestAPI._instances) == 2
+        assert OdooRestAPI._instances[0] is api1
+        assert OdooRestAPI._instances[1] is api2
