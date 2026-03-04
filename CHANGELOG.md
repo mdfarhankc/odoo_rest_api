@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-03-04
+
+### Fixed
+- Swagger UI "No layout defined for StandaloneLayout" error — added missing `swagger-ui-standalone-preset.js` script
+
 ## [0.2.0] - 2026-03-04
 
 ### Added
