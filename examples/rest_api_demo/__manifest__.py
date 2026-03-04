@@ -1,10 +1,15 @@
 {
     "name": "REST API Demo",
     "version": "0.1.0",
-    "category": "Technical",
     "summary": "Example addon showing how to use odoo-rest-api",
-    "depends": ["base", "contacts", "sale"],
+    "description": """ Example addon showing how to use odoo-rest-api """,
+    "category": "Technical",
+    "author": "Mohammed Farhan K C",
+    "depends": ["base", "contacts", "sale", "purchase"],
+    "license": "LGPL-3",
+    "external_dependencies": {
+        "python": ["odoo-rest-api"]
+    },
     "installable": True,
     "application": False,
-    "license": "LGPL-3",
 }
