@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-03-04
+
+### Changed
+* Updated PyPI metadata (keywords, classifiers, project URLs)
+* Improved package discoverability on PyPI
+
 ## [0.2.1] - 2026-03-04
 
 ### Fixed
