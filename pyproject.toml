@@ -1,0 +1,14 @@
+[project]
+name = "odoo-rest-api"
+version = "0.1.0"
+description = "Decorator-based REST API framework for Odoo modules"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "LGPL-3.0-or-later"
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["odoo_rest_api"]
+
+[project.urls]
+Repository = "https://github.com/mdfarhankc/odoo-rest-api.git"
