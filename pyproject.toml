@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=45,<75", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Decorator-based REST API framework for Odoo modules"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "LGPL-3.0-or-later"
+license = {text = "LGPL-3.0-or-later"}
 authors = [{ name = "Mohammed Farhan KC", email = "kcfarhan123@gmail.com" }]
 keywords = ["odoo", "rest", "api", "framework", "decorator"]
 classifiers = [
@@ -25,6 +25,9 @@ dependencies = []
 
 [tool.setuptools.packages.find]
 include = ["odoo_rest_api"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
 
 [project.urls]
 Repository = "https://github.com/mdfarhankc/odoo-rest-api.git"

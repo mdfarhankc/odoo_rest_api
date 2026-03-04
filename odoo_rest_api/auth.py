@@ -2,8 +2,6 @@ import logging
 
 from typing import Callable
 
-from odoo import api
-
 from .exceptions import Unauthorized
 
 _logger = logging.getLogger(__name__)
@@ -78,4 +76,5 @@ def validate_request(request, auth_mode, auth_handler=None):
 
 def get_authenticated_env(request, user_id):
     """Build an Odoo Environment bound to the authenticated user."""
+    from odoo import api
     return api.Environment(request.env.cr, user_id, request.env.context)
