@@ -10,7 +10,7 @@ from .response import error_response, success_response
 _logger = logging.getLogger(__name__)
 
 
-def make_handler(route_def, auth_handler=None):
+def make_handler(route_def, auth_handler=None, simple_error=False):
     """
     Create an Odoo controller method that wraps a user-defined handler.
 
@@ -23,6 +23,8 @@ def make_handler(route_def, auth_handler=None):
     """
     user_handler = route_def.handler
     auth_mode = route_def.auth
+    input_model = route_def.input_model
+    output_model = route_def.output_model
 
     def controller_method(self, **kwargs):
         try:
@@ -42,6 +44,11 @@ def make_handler(route_def, auth_handler=None):
             # Parse request
             parsed = parse_request(request, kwargs)
 
+            # Validate input with pydantic model if provided
+            if input_model and parsed["body"] is not None:
+                from .validation import validate_input
+                parsed["body"] = validate_input(input_model, parsed["body"])
+
             # Build handler arguments from signature
             call_kwargs = build_handler_args(user_handler, env, parsed)
 
@@ -54,6 +61,11 @@ def make_handler(route_def, auth_handler=None):
             if isinstance(result, WerkzeugResponse):
                 return result
 
+            # Validate output with pydantic model if provided
+            if output_model:
+                from .validation import validate_output
+                result = validate_output(output_model, result)
+
             return success_response(result)
 
         except APIException as exc:
@@ -62,10 +74,11 @@ def make_handler(route_def, auth_handler=None):
                 status=exc.status_code,
                 error_type=exc.error_type,
                 details=exc.details,
+                simple_error=simple_error,
             )
         except Exception:
             _logger.exception("Unhandled exception in REST handler %s", user_handler.__name__)
-            return error_response("Internal Server Error", status=500)
+            return error_response("Internal Server Error", status=500, simple_error=simple_error)
 
     controller_method.__name__ = user_handler.__name__
     return controller_method
@@ -87,7 +100,7 @@ def generate_controller(api_instance, caller_module):
         # Convert {param} to <param> for werkzeug routing
         odoo_path = route_def.path.replace("{", "<").replace("}", ">")
 
-        handler = make_handler(route_def, auth_handler=api_instance.auth_handler)
+        handler = make_handler(route_def, auth_handler=api_instance.auth_handler, simple_error=api_instance.simple_error)
 
         decorated = http.route(
             odoo_path,
@@ -142,6 +155,7 @@ def generate_controller(api_instance, caller_module):
                 message=f"Endpoint not found: {http.request.httprequest.path}",
                 status=404,
                 error_type="NotFound",
+                simple_error=api_instance.simple_error,
             )
 
         catchall_handler.__name__ = "_rest_catchall"

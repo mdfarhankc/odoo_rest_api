@@ -178,3 +178,19 @@ class TestErrorResponse:
         resp = error_response("Bad", status=400)
         body = json.loads(resp.data)
         assert "details" not in body["error"]
+
+    def test_simple_error_returns_string(self):
+        resp = error_response("Not found", status=404, simple_error=True)
+        body = json.loads(resp.data)
+        assert body["success"] is False
+        assert body["data"] is None
+        assert body["error"] == "Not found"
+
+    def test_simple_error_ignores_type_and_details(self):
+        resp = error_response(
+            "Bad", status=400, error_type="BadRequest",
+            details={"field": "email"}, simple_error=True,
+        )
+        body = json.loads(resp.data)
+        assert body["error"] == "Bad"
+        assert isinstance(body["error"], str)

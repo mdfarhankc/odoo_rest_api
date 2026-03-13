@@ -49,6 +49,22 @@ def _extract_path_params(path):
     return re.findall(r"\{(\w+)\}", path)
 
 
+def _get_pydantic_schema(model):
+    """Extract JSON Schema from a pydantic model (supports v1 and v2)."""
+    if model is None:
+        return None
+    try:
+        if hasattr(model, "model_json_schema"):
+            # Pydantic v2
+            return model.model_json_schema()
+        elif hasattr(model, "schema"):
+            # Pydantic v1
+            return model.schema()
+    except Exception:
+        pass
+    return None
+
+
 def _build_operation(route_def, api_instance):
     """Build an OpenAPI operation object for a single route."""
     handler = route_def.handler
@@ -135,11 +151,49 @@ def _build_operation(route_def, api_instance):
 
     # Request body for POST/PUT/PATCH
     if route_def.method in ("POST", "PUT", "PATCH"):
+        input_schema = _get_pydantic_schema(route_def.input_model)
+        if input_schema:
+            # Strip $defs from inline schema, they are merged at spec level
+            body_schema = {k: v for k, v in input_schema.items() if k != "$defs"}
+        else:
+            body_schema = {"type": "object"}
+
         operation["requestBody"] = {
             "required": True,
             "content": {
                 "application/json": {
-                    "schema": {"type": "object"},
+                    "schema": body_schema,
+                }
+            },
+        }
+
+        # Add 422 response when input validation is configured
+        if route_def.input_model:
+            operation["responses"]["422"] = {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                    }
+                },
+            }
+
+    # Output schema in success response
+    output_schema = _get_pydantic_schema(route_def.output_model)
+    if output_schema:
+        out_schema = {k: v for k, v in output_schema.items() if k != "$defs"}
+        operation["responses"]["200"] = {
+            "description": "Successful response",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "success": {"type": "boolean", "example": True},
+                            "data": out_schema,
+                            "error": {"type": "null"},
+                        },
+                    }
                 }
             },
         }
@@ -173,7 +227,9 @@ def generate_openapi_spec(api_instance):
                     "properties": {
                         "success": {"type": "boolean", "example": False},
                         "data": {"type": "null"},
-                        "error": {
+                        "error": {"type": "string"}
+                        if getattr(api_instance, "simple_error", False)
+                        else {
                             "type": "object",
                             "properties": {
                                 "type": {"type": "string"},
@@ -200,7 +256,7 @@ def generate_openapi_spec(api_instance):
         }
         spec["security"] = [{"ApiKeyAuth": []}]
 
-    # Build paths
+    # Build paths and collect $defs from pydantic models
     for route_def in api_instance.routes:
         path = route_def.path
         method = route_def.method.lower()
@@ -209,6 +265,13 @@ def generate_openapi_spec(api_instance):
         if path not in spec["paths"]:
             spec["paths"][path] = {}
         spec["paths"][path][method] = operation
+
+        # Merge $defs from pydantic schemas into components/schemas
+        for model in (route_def.input_model, route_def.output_model):
+            schema = _get_pydantic_schema(model)
+            if schema and "$defs" in schema:
+                for def_name, def_schema in schema["$defs"].items():
+                    spec["components"]["schemas"][def_name] = def_schema
 
     return spec
 

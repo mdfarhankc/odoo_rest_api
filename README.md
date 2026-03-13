@@ -12,7 +12,11 @@ A decorator-based REST API framework for Odoo. Create clean, standardized REST e
 - **Standardized JSON responses**: Consistent `{success, data, error}` format
 - **Automatic recordset serialization**: Return `env['res.partner'].search()` directly, recordsets are auto-converted to dicts
 - **Automatic request parsing**: JSON body, query params, and path params injected via signature inspection
+- **Pydantic validation**: Optional `input_model` / `output_model` for request validation and response serialization (supports Pydantic v1 & v2)
+- **Auto-generated API docs**: Swagger UI at `/docs` and OpenAPI 3.0 spec at `/openapi.json`
+- **Route overriding with priority**: Override routes across addons with `priority=10` (higher wins)
 - **Error handling**: Exception classes map to proper HTTP status codes
+- **Configurable error format**: `simple_error=True` returns error as a plain string instead of an object
 - **Pluggable authentication**: Bring your own auth logic
 - **Multi-file support**: Share one API instance across partner.py, order.py, etc.
 - **Odoo 16+ compatible**
@@ -21,6 +25,12 @@ A decorator-based REST API framework for Odoo. Create clean, standardized REST e
 
 ```bash
 pip install odoo-rest-api
+```
+
+With Pydantic validation support:
+
+```bash
+pip install odoo-rest-api[pydantic]
 ```
 
 No Odoo module dependency needed, just a pip package.
@@ -244,6 +254,101 @@ Return recordsets directly, and they are auto-converted to dicts via `.read()`:
 @api.get('/partners')
 def list_partners(env):
     return env['res.partner'].search([])  # Auto-serialized to list of dicts
+```
+
+## Pydantic Validation
+
+Validate request bodies and serialize responses with Pydantic models (optional, install `pydantic` separately):
+
+```python
+from pydantic import BaseModel
+from odoo_rest_api import OdooRestAPI
+
+api = OdooRestAPI(prefix='/api/v1')
+
+class PartnerCreate(BaseModel):
+    name: str
+    email: str = None
+    phone: str = None
+
+class PartnerOut(BaseModel):
+    id: int
+    name: str
+    email: str = None
+
+@api.post('/partners', input_model=PartnerCreate, output_model=PartnerOut)
+def create_partner(env, body):
+    partner = env['res.partner'].create(body)
+    return partner.read(['id', 'name', 'email'])[0]
+```
+
+- **`input_model`**: Validates request body. Returns 422 with field-level error details on failure.
+- **`output_model`**: Serializes response data through the model, stripping extra fields. Fails silently (returns raw data) if output doesn't match.
+
+Models also enrich the auto-generated OpenAPI spec with proper schemas.
+
+## API Documentation
+
+Swagger UI is auto-generated at `{prefix}/docs`:
+
+```python
+api = OdooRestAPI(
+    prefix='/api/v1',
+    title='My API',
+    version='1.0.0',
+    description='Partner management API',
+)
+```
+
+- `GET /api/v1/docs`: Interactive Swagger UI
+- `GET /api/v1/openapi.json`: OpenAPI 3.0 spec
+
+Disable with `docs=False`.
+
+## Route Overriding
+
+Override routes from other addons by decorating the same method+path. The last decorator wins:
+
+```python
+# Base addon
+@api.get('/partners')
+def list_partners(env): ...
+
+# Custom addon: overrides the above
+@api.get('/partners')
+def list_partners_custom(env): ...
+```
+
+Use `priority` for controlled overriding across addons:
+
+```python
+# Base addon (default priority=0)
+@api.get('/partners')
+def list_partners(env): ...
+
+# Custom addon (priority=10 wins over priority=0)
+@api.get('/partners', priority=10)
+def list_partners_custom(env): ...
+```
+
+Lower priority routes are silently ignored.
+
+## Simple Error Format
+
+By default, errors include type and message as an object:
+
+```json
+{"success": false, "data": null, "error": {"type": "NotFound", "message": "Partner not found"}}
+```
+
+Set `simple_error=True` to return error as a plain string:
+
+```python
+api = OdooRestAPI(prefix='/api/v1', simple_error=True)
+```
+
+```json
+{"success": false, "data": null, "error": "Partner not found"}
 ```
 
 ## License

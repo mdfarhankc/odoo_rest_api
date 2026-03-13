@@ -19,6 +19,9 @@ This document explains how the `odoo-rest-api` library works under the hood, the
   - [Step 7: Error Handling (exceptions.py)](#step-7-error-handling-exceptionspy)
   - [Step 8: Authentication (auth.py)](#step-8-authentication-authpy)
   - [Step 9: Auto-Generated API Docs (docs.py)](#step-9-auto-generated-api-docs-docspy)
+  - [Step 10: Pydantic Validation (validation.py)](#step-10-pydantic-validation-validationpy)
+  - [Step 11: Route Overriding and Priority (api.py)](#step-11-route-overriding-and-priority-apipy)
+  - [Step 12: Configurable Error Format (response.py)](#step-12-configurable-error-format-responsepy)
 - [Key Technical Challenges We Solved](#key-technical-challenges-we-solved)
 - [Design Decisions](#design-decisions)
 
@@ -116,6 +119,7 @@ odoo_rest_api/
 ├── exceptions.py       # Exception hierarchy → HTTP status codes
 ├── auth.py             # Pluggable authentication registry
 ├── pagination.py       # PaginationParams helper
+├── validation.py       # Pydantic input/output validation (no Odoo imports)
 └── docs.py             # OpenAPI spec generation + Swagger UI
 ```
 
@@ -155,6 +159,9 @@ class RouteDefinition:
     auth: str = "none"    # Authentication mode
     cors: Optional[str] = "*"
     tags: Optional[list] = None  # For Swagger UI grouping
+    priority: int = 0     # Higher priority wins on same method+path
+    input_model: Optional[type] = None   # Pydantic model for request validation
+    output_model: Optional[type] = None  # Pydantic model for response serialization
 ```
 
 At this point, nothing has happened in Odoo yet. We're just collecting metadata. The functions are plain Python functions with no Odoo dependency needed.
@@ -456,6 +463,133 @@ At `register()` time (not per-request), the library generates an OpenAPI 3.0 spe
 2. **Caching the result**: The spec JSON is generated once and stored as a string. The `/openapi.json` endpoint just returns this cached string. No computation per request.
 
 3. **Serving Swagger UI**: The `/docs` endpoint returns an HTML page that loads Swagger UI from a CDN (unpkg.com) and points it at the `/openapi.json` endpoint.
+
+### Step 10: Pydantic Validation (validation.py)
+
+The library supports optional Pydantic models for request validation and response serialization. Pydantic is not a dependency, and validation only activates when `input_model` or `output_model` is set on a route.
+
+**Why a separate file?**
+
+Validation logic lives in `validation.py`, not in `routing.py`, because `routing.py` imports `from odoo import http` at the top level. Keeping validation separate means it can be tested with plain pytest, no Odoo needed.
+
+**Input validation:**
+
+```python
+def validate_input(model, body):
+    try:
+        if hasattr(model, "model_validate"):  # Pydantic v2
+            instance = model.model_validate(body)
+            return instance.model_dump()
+        else:  # Pydantic v1
+            instance = model(**body)
+            return instance.dict()
+    except Exception as exc:
+        errors = _extract_pydantic_errors(exc)
+        raise ValidationError(message="Request validation failed", details=errors)
+```
+
+On failure, it raises `ValidationError` (HTTP 422) with field-level details like:
+```json
+{"field": "name", "message": "Field required", "type": "missing"}
+```
+
+**Output validation:**
+
+```python
+def validate_output(model, data):
+    try:
+        if isinstance(data, list):
+            return [_serialize_one(model, item) for item in data]
+        return _serialize_one(model, data)
+    except Exception:
+        _logger.warning("Output validation failed for model %s", model.__name__)
+        return data  # Fail silently, don't crash the response
+```
+
+Output validation is lenient: if the data doesn't match the model, it logs a warning and returns the raw data. This prevents API crashes when Odoo returns unexpected fields.
+
+**Pydantic v1/v2 compatibility:**
+
+The library detects the Pydantic version at runtime using duck typing:
+- `model_validate` / `model_dump` / `model_json_schema` → Pydantic v2
+- `__init__` / `dict` / `schema` → Pydantic v1
+
+**Integration with routing.py:**
+
+The handler wrapper uses lazy imports to call validation only when models are configured:
+
+```python
+if input_model and parsed["body"] is not None:
+    from .validation import validate_input
+    parsed["body"] = validate_input(input_model, parsed["body"])
+
+# ... handler call ...
+
+if output_model:
+    from .validation import validate_output
+    result = validate_output(output_model, result)
+```
+
+### Step 11: Route Overriding and Priority (api.py)
+
+Routes can be overridden by decorating the same method+path combination. This enables cross-addon customization, a common pattern in Odoo.
+
+```python
+def _route(self, method, path, **kwargs):
+    def decorator(func):
+        full_path = self.prefix + "/" + path.lstrip("/")
+        priority = kwargs.get("priority", 0)
+        route_def = RouteDefinition(...)
+
+        # Replace existing route with same method+path if new priority >= existing
+        for i, existing in enumerate(self.routes):
+            if existing.method == method and existing.path == full_path:
+                if priority >= existing.priority:
+                    self.routes[i] = route_def
+                return func
+
+        self.routes.append(route_def)
+        return func
+    return decorator
+```
+
+**How priority works:**
+- Default priority is `0`
+- Higher priority always wins: `priority=10` overrides `priority=0`
+- Equal priority: last decorator wins (natural Python override)
+- Lower priority is silently ignored, and the original route stays
+
+**Why this matters for Odoo:**
+
+In Odoo, addons inherit from each other. A custom addon might need to override an API endpoint defined in a base addon. Priority makes this explicit and predictable:
+
+```python
+# Base addon (priority=0, the default)
+@api.get('/partners')
+def list_partners(env): ...
+
+# Custom addon (explicitly higher priority)
+@api.get('/partners', priority=10)
+def list_partners_custom(env): ...
+```
+
+### Step 12: Configurable Error Format (response.py)
+
+The `simple_error` option on `OdooRestAPI` controls whether error responses use an object or a plain string:
+
+```python
+def error_response(message, status=500, error_type="ServerError", details=None, simple_error=False):
+    if simple_error:
+        error_value = message  # Just the string
+    else:
+        error_value = {"type": error_type, "message": message}
+        if details is not None:
+            error_value["details"] = details
+
+    body = {"success": False, "data": None, "error": error_value}
+```
+
+The `simple_error` flag is passed from `OdooRestAPI` → `generate_controller()` → `make_handler()` → every `error_response()` call, including the catch-all 404 handler. This ensures consistent error format across the entire API.
 
 ---
 

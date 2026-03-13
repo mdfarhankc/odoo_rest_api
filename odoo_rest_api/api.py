@@ -13,11 +13,25 @@ class RouteDefinition:
     auth: str = "none"
     cors: Optional[str] = "*"
     tags: Optional[list] = None
+    priority: int = 0
+    input_model: Optional[type] = None
+    output_model: Optional[type] = None
 
 
 class OdooRestAPI:
     """
     FastAPI-like interface for defining REST endpoints within Odoo.
+
+    Args:
+        prefix: URL prefix for all routes (e.g. ``'/api/v1'``).
+        auth: Default auth mode for routes (``'none'``, ``'public'``, ``'user'``, or a registered handler name).
+        auth_handler: Callable that takes ``request`` and returns ``user_id``.
+        cors: Default CORS header value for routes.
+        docs: If ``True``, serves Swagger UI at ``{prefix}/docs``.
+        title: API title shown in Swagger UI and OpenAPI spec.
+        version: API version shown in OpenAPI spec.
+        description: API description shown in OpenAPI spec.
+        simple_error: If ``True``, error responses return a plain string instead of ``{"type": ..., "message": ...}``.
 
     Usage::
 
@@ -30,15 +44,6 @@ class OdooRestAPI:
             return env['res.partner'].search_read([], ['name', 'email'])
 
         api.register()
-
-    Custom auth handler::
-
-        def my_auth(request):
-            token = request.httprequest.headers.get('Authorization')
-            # ... validate token, return user_id
-            return user_id
-
-        api = OdooRestAPI(prefix='/api/v1', auth_handler=my_auth)
     """
 
     _instances: list = []
@@ -53,6 +58,7 @@ class OdooRestAPI:
         title: str = "Odoo REST API",
         version: str = "1.0.0",
         description: str = "",
+        simple_error: bool = False,
     ):
         self.prefix = prefix.rstrip("/")
         self.auth = auth
@@ -62,6 +68,7 @@ class OdooRestAPI:
         self.title = title
         self.version = version
         self.description = description
+        self.simple_error = simple_error
         self.routes: list[RouteDefinition] = []
         self._controller = None
         OdooRestAPI._instances.append(self)
@@ -86,17 +93,45 @@ class OdooRestAPI:
     # ── Route registration ──────────────────────────────────────────
 
     def _route(self, method: str, path: str, **kwargs):
-        """Return a decorator that registers a RouteDefinition."""
+        """Return a decorator that registers a RouteDefinition.
+
+        If a route with the same method+path already exists, the one with
+        higher ``priority`` wins. On equal priority, the last decorator wins.
+        This enables controlled route overriding across addons.
+
+        Usage::
+
+            # Base addon (default priority=0)
+            @api.get('/partners')
+            def list_partners(env): ...
+
+            # Custom addon (higher priority wins)
+            @api.get('/partners', priority=10)
+            def list_partners_custom(env): ...
+        """
 
         def decorator(func):
+            full_path = self.prefix + "/" + path.lstrip("/")
+            priority = kwargs.get("priority", 0)
             route_def = RouteDefinition(
                 method=method,
-                path=self.prefix + "/" + path.lstrip("/"),
+                path=full_path,
                 handler=func,
                 auth=kwargs.get("auth", self.auth),
                 cors=kwargs.get("cors", self.cors),
                 tags=kwargs.get("tags"),
+                priority=priority,
+                input_model=kwargs.get("input_model"),
+                output_model=kwargs.get("output_model"),
             )
+
+            # Replace existing route with same method+path if new priority >= existing
+            for i, existing in enumerate(self.routes):
+                if existing.method == method and existing.path == full_path:
+                    if priority >= existing.priority:
+                        self.routes[i] = route_def
+                    return func
+
             self.routes.append(route_def)
             return func
 

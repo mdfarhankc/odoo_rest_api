@@ -77,20 +77,25 @@ def success_response(data, count=None, status=200):
     )
 
 
-def error_response(message, status=500, error_type="ServerError", details=None):
+def error_response(message, status=500, error_type="ServerError", details=None, simple_error=False):
     """Build a standardized JSON error response."""
     from werkzeug.wrappers import Response
+
+    if simple_error:
+        error_value = message
+    else:
+        error_value = {
+            "type": error_type,
+            "message": message,
+        }
+        if details is not None:
+            error_value["details"] = details
 
     body = {
         "success": False,
         "data": None,
-        "error": {
-            "type": error_type,
-            "message": message,
-        },
+        "error": error_value,
     }
-    if details is not None:
-        body["error"]["details"] = details
     return Response(
         json.dumps(body, default=json_serializer),
         status=status,
