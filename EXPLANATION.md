@@ -1,4 +1,4 @@
-# How odoo-rest-api Works — A Deep Dive
+# How odoo-rest-api Works: A Deep Dive
 
 This document explains how the `odoo-rest-api` library works under the hood, the problems it solves, and the design decisions behind every module.
 
@@ -9,7 +9,7 @@ This document explains how the `odoo-rest-api` library works under the hood, the
 - [The Problem](#the-problem)
 - [The Solution](#the-solution)
 - [Project Structure](#project-structure)
-- [How It Works — Step by Step](#how-it-works--step-by-step)
+- [How It Works: Step by Step](#how-it-works-step-by-step)
   - [Step 1: Defining Routes (api.py)](#step-1-defining-routes-apipy)
   - [Step 2: Registering with Odoo (api.py → routing.py)](#step-2-registering-with-odoo-apipy--routingpy)
   - [Step 3: Dynamic Controller Generation (routing.py)](#step-3-dynamic-controller-generation-routingpy)
@@ -29,7 +29,7 @@ This document explains how the `odoo-rest-api` library works under the hood, the
 Creating REST APIs in Odoo using the built-in `http.Controller` is verbose and lacks modern conventions:
 
 ```python
-# The old way — every endpoint looks like this
+# The old way, every endpoint looks like this
 from odoo import http
 import json
 
@@ -68,7 +68,7 @@ class PartnerAPI(http.Controller):
 **Pain points:**
 - Repeat `@http.route(... type='http', auth='none', csrf=False, cors='*')` on every single endpoint
 - Manual `json.loads(request.httprequest.data)` for parsing POST bodies
-- No consistent response format — each developer does it differently
+- No consistent response format, each developer does it differently
 - Unhandled exceptions return HTML error pages instead of JSON
 - Returning Odoo recordsets crashes with serialization errors (datetime, bytes, etc.)
 - No automatic API documentation
@@ -100,7 +100,7 @@ def create_partner(env, body):
 api.register()
 ```
 
-Visit `/api/v1/docs` and you get interactive Swagger UI documentation — automatically.
+Visit `/api/v1/docs` and you get interactive Swagger UI documentation, automatically.
 
 ---
 
@@ -108,7 +108,7 @@ Visit `/api/v1/docs` and you get interactive Swagger UI documentation — automa
 
 ```
 odoo_rest_api/
-├── __init__.py         # Public API surface — what users import
+├── __init__.py         # Public API surface: what users import
 ├── api.py              # OdooRestAPI class, decorators, route collection
 ├── routing.py          # Dynamic Controller generation (the core trick)
 ├── request_utils.py    # Request parsing and signature-based arg injection
@@ -123,7 +123,7 @@ Each file has a single responsibility. No file imports `odoo` at the top level e
 
 ---
 
-## How It Works — Step by Step
+## How It Works: Step by Step
 
 ### Step 1: Defining Routes (api.py)
 
@@ -144,7 +144,7 @@ The `@api.get('/partners')` decorator calls `api._route("GET", "/partners")`, wh
 
 1. Creates a `RouteDefinition` dataclass holding the method, full path (`/api/v1/partners`), the handler function reference, auth mode, and CORS setting
 2. Appends it to `api.routes` (a simple list)
-3. Returns the **original function unchanged** — the decorator doesn't wrap anything
+3. Returns the **original function unchanged**: the decorator doesn't wrap anything
 
 ```python
 @dataclass
@@ -157,7 +157,7 @@ class RouteDefinition:
     tags: Optional[list] = None  # For Swagger UI grouping
 ```
 
-At this point, nothing has happened in Odoo yet. We're just collecting metadata. The functions are plain Python functions — no Odoo dependency needed.
+At this point, nothing has happened in Odoo yet. We're just collecting metadata. The functions are plain Python functions with no Odoo dependency needed.
 
 ### Step 2: Registering with Odoo (api.py → routing.py)
 
@@ -179,9 +179,9 @@ def register(self):
 
 **Two critical things happen here:**
 
-1. **`inspect.stack()[1]`** — We look at who called `register()`. If it's called from `my_addon/controllers/__init__.py`, we get the module name `my_addon.controllers`. This is crucial because Odoo needs to know which addon owns the controller.
+1. **`inspect.stack()[1]`**: We look at who called `register()`. If it's called from `my_addon/controllers/__init__.py`, we get the module name `my_addon.controllers`. This is crucial because Odoo needs to know which addon owns the controller.
 
-2. **Inject into caller's namespace** — After generating the controller class, we inject it into the caller's module globals. This makes it persist and be discoverable by Odoo's module loader.
+2. **Inject into caller's namespace**: After generating the controller class, we inject it into the caller's module globals. This makes it persist and be discoverable by Odoo's module loader.
 
 **Why must `register()` be called at module level?**
 
@@ -223,15 +223,15 @@ def generate_controller(api_instance, caller_module):
 
 **Breaking this down:**
 
-1. **`methods = {"__module__": caller_module}`** — This dict will become the class body. Setting `__module__` is critical: Odoo's controller metaclass reads this to register the controller under the correct addon. Without this, Odoo wouldn't know which addon owns these routes.
+1. **`methods = {"__module__": caller_module}`**: This dict will become the class body. Setting `__module__` is critical: Odoo's controller metaclass reads this to register the controller under the correct addon. Without this, Odoo wouldn't know which addon owns these routes.
 
-2. **Path conversion** — Our user-friendly `{id}` syntax is converted to werkzeug's `<id>` syntax: `/api/v1/partners/{id}` → `/api/v1/partners/<id>`
+2. **Path conversion**: Our user-friendly `{id}` syntax is converted to werkzeug's `<id>` syntax: `/api/v1/partners/{id}` → `/api/v1/partners/<id>`
 
-3. **`make_handler()`** — Wraps the user's simple function in a full Odoo controller method that handles auth, request parsing, response formatting, and error catching (explained in Step 4).
+3. **`make_handler()`**: Wraps the user's simple function in a full Odoo controller method that handles auth, request parsing, response formatting, and error catching (explained in Step 4).
 
-4. **`http.route()`** — Each wrapped handler is decorated with Odoo's route decorator. We always use `auth="none"` because the library handles authentication itself.
+4. **`http.route()`**: Each wrapped handler is decorated with Odoo's route decorator. We always use `auth="none"` because the library handles authentication itself.
 
-5. **`type(name, (http.Controller,), methods)`** — This is Python's dynamic class creation. It's equivalent to writing a class definition, but at runtime. We create a class that:
+5. **`type(name, (http.Controller,), methods)`**: This is Python's dynamic class creation. It's equivalent to writing a class definition, but at runtime. We create a class that:
    - Inherits from `http.Controller`
    - Has the correct `__module__`
    - Contains all our route methods
@@ -291,7 +291,7 @@ def make_handler(route_def, auth_handler=None):
 
 **The `env` problem:**
 
-When `auth="none"`, Odoo's `request.env` has no user — it's an empty recordset. Calling `request.env['res.partner'].search([])` would crash with a singleton error. We solve this by using `request.env(user=SUPERUSER_ID)`, which gives us a usable environment bound to the admin user.
+When `auth="none"`, Odoo's `request.env` has no user, it's an empty recordset. Calling `request.env['res.partner'].search([])` would crash with a singleton error. We solve this by using `request.env(user=SUPERUSER_ID)`, which gives us a usable environment bound to the admin user.
 
 ### Step 5: Signature-Based Argument Injection (request_utils.py)
 
@@ -376,14 +376,14 @@ def list_partners(env):
     return env['res.partner'].search([])  # Returns a recordset
 ```
 
-The library detects recordsets using duck typing (checks for `_name`, `ids`, and `read` attributes — without importing Odoo's model classes):
+The library detects recordsets using duck typing (checks for `_name`, `ids`, and `read` attributes, without importing Odoo's model classes):
 
 ```python
 def _is_recordset(obj):
     return hasattr(obj, "_name") and hasattr(obj, "ids") and hasattr(obj, "read")
 ```
 
-If a recordset is detected, it's automatically converted to a list of dicts via `.read()`. This is recursive — nested recordsets (like Many2many fields) are also serialized.
+If a recordset is detected, it's automatically converted to a list of dicts via `.read()`. This is recursive, so nested recordsets (like Many2many fields) are also serialized.
 
 **Custom JSON serializer** handles types that `json.dumps` can't:
 - `datetime` → ISO format string (`"2026-03-04T12:30:00"`)
@@ -406,11 +406,11 @@ APIException (500)
 └── RateLimitExceeded (429)
 ```
 
-When a handler raises any `APIException`, the wrapper in `make_handler()` catches it and returns a proper JSON error response with the correct HTTP status code. Unhandled exceptions (anything not an `APIException`) return a generic 500 error — the actual traceback is logged server-side but never exposed to the client.
+When a handler raises any `APIException`, the wrapper in `make_handler()` catches it and returns a proper JSON error response with the correct HTTP status code. Unhandled exceptions (anything not an `APIException`) return a generic 500 error. The actual traceback is logged server-side but never exposed to the client.
 
 ### Step 8: Authentication (auth.py)
 
-The library ships with **no built-in auth** — by default, all routes are public (`auth="none"`). This is intentional: authentication requirements vary wildly between projects (API keys, JWT, OAuth, Odoo's built-in keys, etc.).
+The library ships with **no built-in auth**: by default, all routes are public (`auth="none"`). This is intentional: authentication requirements vary wildly between projects (API keys, JWT, OAuth, Odoo's built-in keys, etc.).
 
 Instead, auth is fully pluggable via two patterns:
 
@@ -438,7 +438,7 @@ The registry pattern is useful when multiple API instances share the same auth l
 
 ### Step 9: Auto-Generated API Docs (docs.py)
 
-Visit `/api/v1/docs` and you get a full Swagger UI — automatically generated from your registered routes.
+Visit `/api/v1/docs` and you get a full Swagger UI, automatically generated from your registered routes.
 
 **How the spec is built:**
 
@@ -453,9 +453,9 @@ At `register()` time (not per-request), the library generates an OpenAPI 3.0 spe
    - Adding request body schema for POST/PUT/PATCH methods
    - Adding security requirements if auth is configured
 
-2. **Caching the result** — The spec JSON is generated once and stored as a string. The `/openapi.json` endpoint just returns this cached string. No computation per request.
+2. **Caching the result**: The spec JSON is generated once and stored as a string. The `/openapi.json` endpoint just returns this cached string. No computation per request.
 
-3. **Serving Swagger UI** — The `/docs` endpoint returns an HTML page that loads Swagger UI from a CDN (unpkg.com) and points it at the `/openapi.json` endpoint.
+3. **Serving Swagger UI**: The `/docs` endpoint returns an HTML page that loads Swagger UI from a CDN (unpkg.com) and points it at the `/openapi.json` endpoint.
 
 ---
 
@@ -463,11 +463,11 @@ At `register()` time (not per-request), the library generates an OpenAPI 3.0 spe
 
 ### 1. Odoo's Controller Discovery
 
-Odoo discovers controllers by scanning for `http.Controller` subclasses at import time. The metaclass (or `__init_subclass__` in newer Odoo) reads `__module__` from the class to determine which addon owns it. Our dynamic `type()` call must set `__module__` correctly — otherwise Odoo either ignores the controller or registers it under the wrong addon.
+Odoo discovers controllers by scanning for `http.Controller` subclasses at import time. The metaclass (or `__init_subclass__` in newer Odoo) reads `__module__` from the class to determine which addon owns it. Our dynamic `type()` call must set `__module__` correctly. Otherwise Odoo either ignores the controller or registers it under the wrong addon.
 
 ### 2. The `env` Singleton Problem
 
-With `auth='none'`, Odoo's `request.env` has no user — `request.env.user` is an empty recordset. Any ORM operation would crash:
+With `auth='none'`, Odoo's `request.env` has no user, so `request.env.user` is an empty recordset. Any ORM operation would crash:
 ```
 ValueError: Expected singleton: res.users()
 ```
@@ -486,7 +486,7 @@ Solution: The custom JSON serializer tries UTF-8 decoding first, then falls back
 The library imports Odoo internals (`from odoo import http`), but we want to run pytest without a full Odoo installation. Solution:
 - All `odoo` imports are either in `routing.py` (which only runs inside Odoo) or lazy (inside function bodies, like `auth.py`)
 - Test files mock `werkzeug` with a minimal `_FakeResponse` class
-- Tests exercise route collection, spec generation, serialization, and exception handling — all without Odoo
+- Tests exercise route collection, spec generation, serialization, and exception handling, all without Odoo
 
 ### 5. Multi-File API Support
 
@@ -494,15 +494,15 @@ Users want to split routes across files (`partner.py`, `order.py`, `analytics.py
 
 Solution: The shared instance pattern:
 ```python
-# app.py — defines the instance
+# app.py: defines the instance
 api = OdooRestAPI(prefix='/api/v1')
 
-# partner.py — imports and uses it
+# partner.py: imports and uses it
 from .app import api
 @api.get('/partners')
 def list_partners(env): ...
 
-# __init__.py — imports all routes, then registers
+# __init__.py: imports all routes, then registers
 from . import partner
 from . import order
 from .app import api
@@ -531,4 +531,4 @@ Odoo addons must be in the `addons_path`. A pip package can be installed anywher
 - Works across Odoo 16, 17, and 18 without version-specific addon manifests
 
 **Why cache the OpenAPI spec at registration time?**
-Routes are fixed at import time — they never change while the server is running. Generating the spec once (instead of per-request) is both simpler and faster.
+Routes are fixed at import time and never change while the server is running. Generating the spec once (instead of per-request) is both simpler and faster.

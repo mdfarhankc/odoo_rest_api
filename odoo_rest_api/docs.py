@@ -95,7 +95,7 @@ def _build_operation(route_def, api_instance):
         }
         operation["security"] = [{"ApiKeyAuth": []}]
     elif api_instance.auth not in ("none", "public"):
-        # API-level auth but route overrides to none — no security on this route
+        # API-level auth but route overrides to none, so no security on this route
         operation["security"] = []
 
     # Path parameters

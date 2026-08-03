@@ -1,5 +1,5 @@
 """
-Analytics & reporting endpoints — complex queries, raw SQL, aggregations.
+Analytics & reporting endpoints: complex queries, raw SQL, aggregations.
 
     GET    /api/v1/analytics/dashboard         Dashboard summary stats
     GET    /api/v1/analytics/top-products       Top selling products (raw SQL)       Stock levels with reorder alerts
@@ -11,7 +11,7 @@ from .app import api
 
 @api.get("/analytics/dashboard")
 def dashboard(env):
-    """Multi-model dashboard — pulls stats from several models in one call."""
+    """Multi-model dashboard that pulls stats from several models in one call."""
     Partner = env["res.partner"]
     Order = env["sale.order"]
     Invoice = env["account.move"]
@@ -49,7 +49,7 @@ def dashboard(env):
 @api.get("/analytics/top-products")
 def top_products(env, **params):
     """
-    Top selling products by quantity — raw SQL for performance.
+    Top selling products by quantity, using raw SQL for performance.
 
     Query params:
         limit (int): number of products (default 10)

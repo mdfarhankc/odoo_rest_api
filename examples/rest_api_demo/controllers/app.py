@@ -1,5 +1,5 @@
 """
-Shared API instance — import this in all route files.
+Shared API instance. Import this in all route files.
 
 All routes share the same prefix, auth handler, and CORS config.
 """
@@ -9,7 +9,7 @@ from odoo_rest_api import OdooRestAPI
 from odoo_rest_api.exceptions import Unauthorized
 
 
-# ── Auth handler (optional — remove for no auth) ────────────────
+# ── Auth handler (optional, remove for no auth) ─────────────────
 def api_key_auth(request):
     """
     Simple API key auth against ir.config_parameter.

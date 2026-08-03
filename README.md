@@ -8,13 +8,13 @@ A decorator-based REST API framework for Odoo. Create clean, standardized REST e
 
 ## Features
 
-- **Decorator-based routing** — `@api.get()`, `@api.post()`, `@api.put()`, `@api.patch()`, `@api.delete()`
-- **Standardized JSON responses** — Consistent `{success, data, error}` format
-- **Automatic recordset serialization** — Return `env['res.partner'].search()` directly, recordsets are auto-converted to dicts
-- **Automatic request parsing** — JSON body, query params, and path params injected via signature inspection
-- **Error handling** — Exception classes map to proper HTTP status codes
-- **Pluggable authentication** — Bring your own auth logic
-- **Multi-file support** — Share one API instance across partner.py, order.py, etc.
+- **Decorator-based routing**: `@api.get()`, `@api.post()`, `@api.put()`, `@api.patch()`, `@api.delete()`
+- **Standardized JSON responses**: Consistent `{success, data, error}` format
+- **Automatic recordset serialization**: Return `env['res.partner'].search()` directly, recordsets are auto-converted to dicts
+- **Automatic request parsing**: JSON body, query params, and path params injected via signature inspection
+- **Error handling**: Exception classes map to proper HTTP status codes
+- **Pluggable authentication**: Bring your own auth logic
+- **Multi-file support**: Share one API instance across partner.py, order.py, etc.
 - **Odoo 16+ compatible**
 
 ## Installation
@@ -23,7 +23,7 @@ A decorator-based REST API framework for Odoo. Create clean, standardized REST e
 pip install odoo-rest-api
 ```
 
-No Odoo module dependency needed — just a pip package.
+No Odoo module dependency needed, just a pip package.
 
 ## Quick Start
 
@@ -86,7 +86,7 @@ from . import partner_api
 Share one API instance across multiple files:
 
 ```python
-# controllers/app.py — shared instance
+# controllers/app.py: shared instance
 from odoo_rest_api import OdooRestAPI
 api = OdooRestAPI(prefix='/api/v1')
 
@@ -110,7 +110,7 @@ def list_orders(env, **params): ...
 @api.get('/orders/{id}')
 def get_order(env, id): ...
 
-# controllers/__init__.py — import routes then register
+# controllers/__init__.py: import routes then register
 from . import partner
 from . import order
 from .app import api
@@ -155,7 +155,7 @@ curl -X POST -H "Content-Type: application/json" \
 
 ## Authentication
 
-By default, routes have no authentication (`auth="none"`). You add auth by providing your own handler — a function that takes `request` and returns a `user_id`.
+By default, routes have no authentication (`auth="none"`). You add auth by providing your own handler, a function that takes `request` and returns a `user_id`.
 
 ### Option 1: Inline auth handler
 
@@ -238,7 +238,7 @@ Handler arguments are injected based on parameter names:
 
 ## Recordset Serialization
 
-Return recordsets directly — they're auto-converted to dicts via `.read()`:
+Return recordsets directly, and they are auto-converted to dicts via `.read()`:
 
 ```python
 @api.get('/partners')

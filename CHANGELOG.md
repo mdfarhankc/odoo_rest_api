@@ -11,12 +11,12 @@ All notable changes to this project will be documented in this file.
 ## [0.2.1] - 2026-03-04
 
 ### Fixed
-- Swagger UI "No layout defined for StandaloneLayout" error — added missing `swagger-ui-standalone-preset.js` script
+- Swagger UI "No layout defined for StandaloneLayout" error, caused by the missing `swagger-ui-standalone-preset.js` script
 
 ## [0.2.0] - 2026-03-04
 
 ### Added
-- **Auto-generated API documentation** — `GET {prefix}/docs` serves Swagger UI, `GET {prefix}/openapi.json` serves the OpenAPI 3.0 spec
+- **Auto-generated API documentation**: `GET {prefix}/docs` serves Swagger UI, `GET {prefix}/openapi.json` serves the OpenAPI 3.0 spec
 - OpenAPI spec auto-generated from registered routes, handler signatures, docstrings, and type hints
 - `docs`, `title`, `version`, `description` parameters on `OdooRestAPI`
 - `tags` parameter on route decorators for custom endpoint grouping
