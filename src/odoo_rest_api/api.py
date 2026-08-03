@@ -1,6 +1,10 @@
 import inspect
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
+
+# Distinguishes "option not passed" from an explicit None, so that a route
+# declaring cors=None (disable CORS here) is not mistaken for "use the default".
+_UNSET: Any = object()
 
 
 @dataclass
@@ -12,7 +16,7 @@ class RouteDefinition:
     handler: Callable
     auth: str = "none"
     cors: Optional[str] = "*"
-    tags: Optional[list] = None
+    tags: Optional[list[str]] = None
     priority: int = 0
     input_model: Optional[type] = None
     output_model: Optional[type] = None
@@ -46,8 +50,6 @@ class OdooRestAPI:
         api.register()
     """
 
-    _instances: list = []
-
     def __init__(
         self,
         prefix: str = "",
@@ -71,7 +73,6 @@ class OdooRestAPI:
         self.simple_error = simple_error
         self.routes: list[RouteDefinition] = []
         self._controller = None
-        OdooRestAPI._instances.append(self)
 
     # ── HTTP method decorators ──────────────────────────────────────
 
@@ -92,8 +93,23 @@ class OdooRestAPI:
 
     # ── Route registration ──────────────────────────────────────────
 
-    def _route(self, method: str, path: str, **kwargs):
+    def _route(
+        self,
+        method: str,
+        path: str,
+        *,
+        auth: Optional[str] = _UNSET,
+        cors: Optional[str] = _UNSET,
+        tags: Optional[list[str]] = None,
+        priority: int = 0,
+        input_model: Optional[type] = None,
+        output_model: Optional[type] = None,
+    ):
         """Return a decorator that registers a RouteDefinition.
+
+        Options are declared explicitly rather than collected via ``**kwargs``
+        so that a misspelled option (``tag=`` for ``tags=``) raises TypeError
+        at import time instead of being silently discarded.
 
         If a route with the same method+path already exists, the one with
         higher ``priority`` wins. On equal priority, the last decorator wins.
@@ -112,17 +128,16 @@ class OdooRestAPI:
 
         def decorator(func):
             full_path = self.prefix + "/" + path.lstrip("/")
-            priority = kwargs.get("priority", 0)
             route_def = RouteDefinition(
                 method=method,
                 path=full_path,
                 handler=func,
-                auth=kwargs.get("auth", self.auth),
-                cors=kwargs.get("cors", self.cors),
-                tags=kwargs.get("tags"),
+                auth=self.auth if auth is _UNSET else auth,
+                cors=self.cors if cors is _UNSET else cors,
+                tags=tags,
                 priority=priority,
-                input_model=kwargs.get("input_model"),
-                output_model=kwargs.get("output_model"),
+                input_model=input_model,
+                output_model=output_model,
             )
 
             # Replace existing route with same method+path if new priority >= existing

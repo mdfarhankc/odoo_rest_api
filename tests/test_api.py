@@ -5,6 +5,8 @@ Note: register() requires Odoo's http.Controller and is not tested here.
 Only the decorator-based route collection is tested.
 """
 
+import pytest
+
 from odoo_rest_api.api import OdooRestAPI, RouteDefinition
 
 
@@ -28,8 +30,6 @@ class TestRouteDefinition:
 
 class TestOdooRestAPIRouteCollection:
     def setup_method(self):
-        # Clear class-level instances to avoid pollution between tests
-        OdooRestAPI._instances = []
         self.api = OdooRestAPI(prefix="/api/v1")
 
     def test_get_decorator(self):
@@ -138,18 +138,13 @@ class TestOdooRestAPIRouteCollection:
 
         assert self.api.routes[0].cors == "https://example.com"
 
-    def test_instances_tracked(self):
-        OdooRestAPI._instances = []
-        api1 = OdooRestAPI(prefix="/api/v1")
-        api2 = OdooRestAPI(prefix="/api/v2")
-        assert len(OdooRestAPI._instances) == 2
-        assert OdooRestAPI._instances[0] is api1
-        assert OdooRestAPI._instances[1] is api2
+    def test_unknown_option_is_rejected(self):
+        with pytest.raises(TypeError):
+            self.api.get("/partners", tag="typo")
 
 
 class TestRouteOverriding:
     def setup_method(self):
-        OdooRestAPI._instances = []
         self.api = OdooRestAPI(prefix="/api/v1")
 
     def test_override_same_path_and_method(self):
@@ -245,7 +240,6 @@ class TestRouteOverriding:
 
 class TestRoutePriority:
     def setup_method(self):
-        OdooRestAPI._instances = []
         self.api = OdooRestAPI(prefix="/api/v1")
 
     def test_higher_priority_wins(self):

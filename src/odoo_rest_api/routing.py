@@ -80,7 +80,13 @@ def make_handler(route_def, auth_handler=None, simple_error=False):
             _logger.exception("Unhandled exception in REST handler %s", user_handler.__name__)
             return error_response("Internal Server Error", status=500, simple_error=simple_error)
 
+    # Copy identity for introspection, but deliberately not via functools.wraps:
+    # wraps sets __wrapped__, which makes inspect.signature() report the user
+    # handler's signature instead of this method's (self, **kwargs). Odoo's
+    # routing inspects controller methods, so that swap would misbind params.
     controller_method.__name__ = user_handler.__name__
+    controller_method.__qualname__ = user_handler.__qualname__
+    controller_method.__doc__ = user_handler.__doc__
     return controller_method
 
 
