@@ -38,7 +38,11 @@ classifiers = [
 dependencies = []
 
 [tool.setuptools.packages.find]
-include = ["odoo_rest_api"]
+where = ["src"]
+include = ["odoo_rest_api*"]
+
+[tool.setuptools.package-data]
+odoo_rest_api = ["py.typed"]
 
 [project.optional-dependencies]
 pydantic = ["pydantic>=1.10"]
